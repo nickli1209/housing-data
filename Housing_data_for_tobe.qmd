@@ -1,0 +1,51 @@
+---
+title: "Housing data for tobe"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+**imports**
+
+```{r}
+housing<- read.csv("hpi_at_state.csv")
+prices_1980 = read.csv("corrected_state_base_prices_1980.csv")
+state_lookup <- data.frame(
+  state_abb = state.abb,
+  state_name = state.name
+)
+```
+
+**Prices 1980**
+
+```{r}
+prices_1980
+```
+
+**clean and join data**
+
+```{r}
+housing_clean <- housing|>
+  filter(X1 == 1)|>
+  rename(State = AK,
+         Year = X1975)|>
+  select(-X1)|>
+  left_join(state_lookup, by= join_by(State == state_abb))|>
+  left_join(prices_1980, by = join_by(state_name == state))|>
+  mutate(avg_housing_prices = (X61.63/100)*base_price_1980)
+ 
+housing_clean
+```
+
+Write to file
+
+```{r}
+write.csv(housing_clean, "housing_prices_for_tobe.csv", row.names = FALSE)
+```
